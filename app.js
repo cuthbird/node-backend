@@ -1,5 +1,6 @@
 const express = require('express');
 const { Pool } = require('pg'); // Import the Pool class
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 const port = 3000;
@@ -14,6 +15,15 @@ const pool = new Pool({
 });
 
 app.use(express.json());
+
+// Apply rate limiting middleware to all requests
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+app.use(limiter);
 
 // Default routes
 app.get('/', (req, res) => {
